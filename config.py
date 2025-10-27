@@ -17,9 +17,9 @@ SYMBOLS = [
 ]
 
 INTERVAL = '1m'
-BAND_MULT_3 = 3.1           # VWAP Bands at 3 standard deviations
+BAND_MULT_3 = 1           # VWAP Bands at 3 standard deviations
 CALC_MODE = 'Standard Deviation'
 SESSION_DELAY_MIN = 30      # Delay signals for the first 30 mins of the UTC day
-COOLDOWN_MIN = 30           # Cooldown period after a trade in one direction
-STOPLOSS_PERCENT = 3.0      # Hard Stoploss at 3.0%
+COOLDOWN_MIN = 1           # Cooldown period after a trade in one direction
+STOPLOSS_PERCENT = 1.0      # Hard Stoploss at 3.0%
 SAFETY_CHECK_INTERVAL_SEC = 300 # Backfill safety check every 5 minutes (300 seconds)
