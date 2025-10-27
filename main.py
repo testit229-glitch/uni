@@ -190,7 +190,7 @@ def restart_stream():
 print("="*50)
 print(f"VWAP Trading Bot v2.0")
 print(f"Symbols: {len(SYMBOLS)}")
-print(f"Port: {os.environ.get('PORT', 10000)}")
+print(f"Port: {os.environ.get('PORT', 65535)}")
 print("="*50)
 
 # Load historical data
@@ -231,7 +231,7 @@ threads.append(t)
 
 print("\n" + "="*50)
 print("✅ Bot Started Successfully!")
-print(f"✅ Web server running on port {os.environ.get('PORT', 10000)}")
+print(f"✅ Web server running on port {os.environ.get('PORT', 65535)}")
 print(f"✅ All {len(threads)} services running")
 print(f"✅ Telegram commands ready")
 print("="*50)
