@@ -6,12 +6,6 @@ from datetime import datetime, timezone
 from binance import Client
 from unicorn_binance_websocket_api.manager import BinanceWebSocketApiManager
 import json
-
-# Imports for Render Dummy Web Server
-import os
-import socket
-from http.server import BaseHTTPRequestHandler, HTTPServer
-
 from config import (
     TELEGRAM_TOKEN, CHAT_ID, SYMBOLS, INTERVAL, BAND_MULT_3, 
     CALC_MODE, SESSION_DELAY_MIN, COOLDOWN_MIN, STOPLOSS_PERCENT, 
@@ -170,41 +164,6 @@ def restart_stream():
     except Exception as e:
         print(f"Restart error: {e}")
 
-# ==============================================================
-# START: DUMMY WEB SERVER FOR RENDER (FREE TIER)
-# ==============================================================
-
-# Get port from environment variable set by Render, default to 8080
-PORT = int(os.environ.get('PORT', 8080))
-
-class HealthCheckHandler(BaseHTTPRequestHandler):
-    """Simple handler to respond to Render's health checks."""
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-        self.wfile.write(b"Bot is Running!")
-    
-    def log_message(self, format, *args):
-        # Suppress standard logging to keep console clean
-        return
-
-def start_dummy_web_server():
-    """Starts a simple HTTP server in a thread."""
-    try:
-        httpd = HTTPServer(('', PORT), HealthCheckHandler)
-        print(f"\n✅ Dummy Web Server started on port {PORT} for Render health check")
-        httpd.serve_forever()
-    except socket.error as e:
-        print(f"⚠️ Could not start dummy server on port {PORT}: {e}")
-    except Exception as e:
-        print(f"⚠️ Dummy server failed: {e}")
-
-# ==============================================================
-# END: DUMMY WEB SERVER
-# ==============================================================
-
-
 # MAIN EXECUTION
 print("="*50)
 print(f"VWAP Trading Bot v2.0")
@@ -246,12 +205,6 @@ threads.append(t)
 t = threading.Thread(target=monitor_connection, daemon=True)
 t.start()
 threads.append(t)
-
-# Render Dummy Web Server Thread
-t_web = threading.Thread(target=start_dummy_web_server, daemon=True)
-t_web.start()
-threads.append(t_web)
-
 
 print("\n" + "="*50)
 print("✅ Bot Started Successfully!")
