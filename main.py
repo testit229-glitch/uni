@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from binance import Client
 from unicorn_binance_websocket_api.manager import BinanceWebSocketApiManager
 import json
+import os
 from config import (
     TELEGRAM_TOKEN, CHAT_ID, SYMBOLS, INTERVAL, BAND_MULT_3, 
     CALC_MODE, SESSION_DELAY_MIN, COOLDOWN_MIN, STOPLOSS_PERCENT, 
@@ -14,9 +15,23 @@ from config import (
 from bot import VWAPBot, SignalsCounter
 from telegram_handler import TelegramCommandHandler
 
+# Import web server
+from web_server import start_web_server, update_bot_status
+
 # Initialize
 signal_counter = SignalsCounter()
 client = Client(tld='com')
+
+# Update bot status for web server
+update_bot_status({
+    'started_at': datetime.now(timezone.utc),
+    'is_running': True
+})
+
+# Start web server in background thread (IMPORTANT: Start this first!)
+web_thread = threading.Thread(target=start_web_server, daemon=True)
+web_thread.start()
+print("✓ Web server started for Render")
 
 # Create bot instances
 print(f"Initializing {len(SYMBOLS)} trading bots...")
@@ -28,7 +43,7 @@ bots = {
     for symbol in SYMBOLS
 }
 
-# WebSocket Manager - FIXED: Removed invalid parameter
+# WebSocket Manager
 ubwa = BinanceWebSocketApiManager(
     exchange="binance.com-futures",
     high_performance=True,
@@ -90,6 +105,13 @@ def process_websocket_messages():
                                         'Volume': float(kline['v'])
                                     }
                                     bot.process_new_kline(new_row)
+                                    
+                                    # Update web server status
+                                    active_positions = sum(1 for b in bots.values() if b.current_position != 'NONE')
+                                    update_bot_status({
+                                        'active_positions': active_positions,
+                                        'signals_count': signal_counter.get_count()
+                                    })
                             
                 except Exception as e:
                     pass  # Silently handle parsing errors
@@ -168,6 +190,7 @@ def restart_stream():
 print("="*50)
 print(f"VWAP Trading Bot v2.0")
 print(f"Symbols: {len(SYMBOLS)}")
+print(f"Port: {os.environ.get('PORT', 10000)}")
 print("="*50)
 
 # Load historical data
@@ -208,16 +231,22 @@ threads.append(t)
 
 print("\n" + "="*50)
 print("✅ Bot Started Successfully!")
+print(f"✅ Web server running on port {os.environ.get('PORT', 10000)}")
 print(f"✅ All {len(threads)} services running")
 print(f"✅ Telegram commands ready")
 print("="*50)
 print("\nSend /help to bot for commands")
-print("Press Ctrl+C to stop\n")
 
 # Keep main thread alive
 try:
     while True:
         time.sleep(60)
+        
+        # Update web server status
+        update_bot_status({
+            'is_running': telegram_handler.is_running,
+            'signals_count': signal_counter.get_count()
+        })
         
         # Health check
         try:
