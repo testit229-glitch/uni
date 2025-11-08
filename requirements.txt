@@ -1,8 +1,0 @@
-python-binance
-unicorn-binance-websocket-api
-pandas
-numpy
-requests
-psutil
-flask
-python-telegram-bot
